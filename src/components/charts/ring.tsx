@@ -51,20 +51,22 @@ export function Ring({
   const single = segments.length <= 1;
   const gap = single ? 0 : thickness * 1.1;
 
-  let cursor = 0;
-  const arcs = segments.map((segment, index) => {
-    const share = total > 0 ? segment.value / total : 0;
-    const span = share * circumference;
-    const start = cursor;
-    cursor += span;
+  const spans = segments.map((segment) =>
+    total > 0 ? (segment.value / total) * circumference : 0,
+  );
 
-    return {
-      ...segment,
-      index,
-      offset: start + gap / 2,
-      length: Math.max(span - gap, 0.01),
-    };
-  });
+  // Początek każdego wycinka to suma poprzednich — sumy prefiksowe liczymy
+  // osobno, żeby `map` niżej pozostał czystą funkcją indeksu.
+  const starts = spans.map((_, index) =>
+    spans.slice(0, index).reduce((sum, span) => sum + span, 0),
+  );
+
+  const arcs = segments.map((segment, index) => ({
+    ...segment,
+    index,
+    offset: starts[index] + gap / 2,
+    length: Math.max(spans[index] - gap, 0.01),
+  }));
 
   return (
     <div

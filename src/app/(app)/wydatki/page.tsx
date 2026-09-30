@@ -4,6 +4,7 @@ import { MonthPill } from "@/components/month/month-pill";
 import { CategoryFilter } from "@/components/expenses/category-filter";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { ExpensesSkeleton } from "@/components/skeletons";
+import { Reveal, STAGGER } from "@/components/motion/reveal";
 import { Card, CardContent } from "@/components/ui/card";
 import { getMonthData, getSessionContext } from "@/lib/data";
 import { formatDayHeader, formatMoney } from "@/lib/format";
@@ -20,10 +21,10 @@ export default async function ExpensesPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <Reveal className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-semibold tracking-tight">Wydatki</h1>
         <MonthPill month={month} />
-      </div>
+      </Reveal>
 
       <Suspense
         key={`${month}-${categoryId ?? "all"}`}
@@ -67,60 +68,71 @@ async function ExpensesSection({
 
   return (
     <>
-      <CategoryFilter
-        categories={data.categories}
-        counts={counts}
-        active={categoryId}
-      />
+      <Reveal>
+        <CategoryFilter
+          categories={data.categories}
+          counts={counts}
+          active={categoryId}
+        />
+      </Reveal>
 
-      <div className="flex items-baseline justify-between gap-4">
+      <Reveal
+        delay={STAGGER}
+        className="flex items-baseline justify-between gap-4"
+      >
         <p className="text-muted-foreground text-sm">
           {filtered.length} {filtered.length === 1 ? "wpis" : "wpisów"}
         </p>
         <p className="text-lg font-semibold tabular-nums">
           {formatMoney(total)}
         </p>
-      </div>
+      </Reveal>
 
       {byDay.size === 0 ? (
-        <Card>
-          <CardContent className="text-muted-foreground py-10 text-center text-sm">
-            Brak wydatków
-            {categoryId ? " w tej kategorii" : ""} w tym miesiącu.
-          </CardContent>
-        </Card>
+        <Reveal delay={STAGGER * 2}>
+          <Card>
+            <CardContent className="text-muted-foreground py-10 text-center text-sm">
+              Brak wydatków
+              {categoryId ? " w tej kategorii" : ""} w tym miesiącu.
+            </CardContent>
+          </Card>
+        </Reveal>
       ) : (
         /* Jedna karta z nagłówkami dni w środku — osobna karta na każdy dzień
            przy jednym wpisie dawała ścianę prawie pustych prostokątów. */
-        <Card>
-          <CardContent className="divide-y">
-            {[...byDay.entries()].map(([day, expenses]) => (
-              <section key={day} className="py-3 first:pt-0 last:pb-0">
-                <div className="mb-1 flex items-baseline justify-between gap-4">
-                  <h2 className="text-muted-foreground text-xs font-medium first-letter:uppercase">
-                    {formatDayHeader(day)}
-                  </h2>
-                  {/* Przy jednym wpisie suma dnia tylko powtarzałaby kwotę obok. */}
-                  {expenses.length > 1 ? (
-                    <span className="text-muted-foreground text-xs tabular-nums">
-                      {formatMoney(
-                        expenses.reduce((sum, e) => sum + Number(e.amount), 0),
-                      )}
-                    </span>
-                  ) : null}
-                </div>
-                <ExpenseList
-                  expenses={expenses}
-                  categories={data.categories}
-                  month={month}
-                  showDate={false}
-                />
-              </section>
-            ))}
-          </CardContent>
-        </Card>
+        <Reveal delay={STAGGER * 2}>
+          <Card>
+            <CardContent className="divide-y">
+              {[...byDay.entries()].map(([day, expenses]) => (
+                <section key={day} className="py-3 first:pt-0 last:pb-0">
+                  <div className="mb-1 flex items-baseline justify-between gap-4">
+                    <h2 className="text-muted-foreground text-xs font-medium first-letter:uppercase">
+                      {formatDayHeader(day)}
+                    </h2>
+                    {/* Przy jednym wpisie suma dnia tylko powtarzałaby kwotę obok. */}
+                    {expenses.length > 1 ? (
+                      <span className="text-muted-foreground text-xs tabular-nums">
+                        {formatMoney(
+                          expenses.reduce(
+                            (sum, e) => sum + Number(e.amount),
+                            0,
+                          ),
+                        )}
+                      </span>
+                    ) : null}
+                  </div>
+                  <ExpenseList
+                    expenses={expenses}
+                    categories={data.categories}
+                    month={month}
+                    showDate={false}
+                  />
+                </section>
+              ))}
+            </CardContent>
+          </Card>
+        </Reveal>
       )}
-
     </>
   );
 }

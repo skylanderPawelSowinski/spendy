@@ -54,6 +54,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-skeleton: var(--skeleton);
   --color-grid: var(--grid);
   --color-axis: var(--axis);
   --color-positive: var(--positive);
@@ -125,6 +126,13 @@
   --grid: #e8e7e1;
   --axis: #c9c8c1;
   --track: #ecebe5;
+
+  /*
+   * Szkielet musi odbijać się od karty, na której leży — `--muted` (#f1f1ed)
+   * różni się od bieli o niecałe 2%, więc bloki ładowania były praktycznie
+   * niewidoczne, a przebiegające po nich światło nie miało czego rozjaśnić.
+   */
+  --skeleton: #e6e6e2;
 
   /*
    * Ciemna karta nagłówka. `--ink-muted` daje 7.1:1 na `--ink`, więc opisy
@@ -283,8 +291,15 @@
   }
 }
 
-/* Przesuwające się światło po szkielecie — „to się jeszcze ładuje". */
-@keyframes shimmer {
+/*
+ * Przesuwające się światło po szkielecie — „to się jeszcze ładuje".
+ *
+ * Nazwa `sheen`, a nie `shimmer`: `shimmer` jest już zajęte przez
+ * shadcn/tailwind.css (połysk na tekście, z `background-clip: text`).
+ * Utility o tej samej nazwie scalają się, a cudze `background-clip: text`
+ * sprawiało, że bloki szkieletu w ogóle się nie malowały.
+ */
+@keyframes sheen {
   from {
     background-position: 160% 0;
   }
@@ -320,20 +335,20 @@
   animation-delay: var(--reveal-delay, 0ms);
 }
 
-@utility shimmer {
+@utility sheen {
   /*
-   * Gradient jedzie po tle `bg-muted`, więc rozjaśnienie robimy bielą karty.
+   * Światło jedzie po bazie `--skeleton` i rozjaśnia ją do bieli karty.
    * `background-repeat: no-repeat` zapobiega drugiemu, doganiającemu błyskowi.
    */
   background-image: linear-gradient(
     90deg,
-    transparent 0%,
-    color-mix(in oklab, var(--card) 85%, transparent) 45%,
-    transparent 90%
+    transparent 25%,
+    color-mix(in oklab, var(--card) 55%, transparent) 50%,
+    transparent 75%
   );
   background-size: 220% 100%;
   background-repeat: no-repeat;
-  animation: shimmer 1.6s ease-in-out infinite;
+  animation: sheen 1.6s ease-in-out infinite;
 }
 
 /*
@@ -376,7 +391,7 @@
       stroke-dasharray: var(--arc-length) var(--arc-circumference);
     }
   }
-  @keyframes shimmer {
+  @keyframes sheen {
     from,
     to {
       background-position: 50% 0;

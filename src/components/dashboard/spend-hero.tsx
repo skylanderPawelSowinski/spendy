@@ -257,7 +257,9 @@ function LimitStrip({ limit }: { limit: SpendingLimit }) {
 
       <div className="flex items-baseline justify-between gap-3">
         <p className={cn("flex items-center gap-1.5 text-xs", tone.text)}>
-          {tone.Icon ? <tone.Icon className="size-3.5 shrink-0" aria-hidden /> : null}
+          {tone.Icon ? (
+            <tone.Icon className="size-3.5 shrink-0" aria-hidden />
+          ) : null}
           {tone.label}
         </p>
         <p className="text-sm font-semibold tabular-nums">

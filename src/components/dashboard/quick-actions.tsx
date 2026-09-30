@@ -38,7 +38,7 @@ export function QuickActions({ month }: { month: MonthKey }) {
         Ujemne marginesy wypuszczają pasek poza padding strony, żeby ostatnia
         pigułka „wychodziła za krawędź" — czytelny sygnał, że jest co przewijać.
       */}
-      <ul className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <ul className="no-scrollbar -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1">
         {actions.map((action, index) => (
           <li
             key={action.href}
