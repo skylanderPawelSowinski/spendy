@@ -1,26 +1,385 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Aplikacja jest wyłącznie w trybie jasnym — wariant `dark:` zostaje
+ * zdefiniowany, bo używają go komponenty shadcn, ale nigdy się nie aktywuje
+ * (klasa `.dark` nie trafia na <html>).
+ */
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /*
+   * `--font-inter` ustawia next/font na <html>. Nie nazywamy jej `--font-sans`,
+   * bo token o tej samej nazwie odwoływałby się do siebie i cała reguła
+   * font-family byłaby nieważna — font w ogóle by się nie zastosował.
+   */
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Mono pojawia się tylko w tooltipie wykresu — nie warto za to pobierać pliku. */
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  /*
+   * Powierzchnia „ink" — ciemna karta nagłówka pulpitu. Trzymamy ją jako
+   * osobny zestaw tokenów, a nie jako wariant `dark:`, bo to element
+   * projektu, a nie motyw: ciemna zostaje także w jasnym interfejsie.
+   */
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-track: var(--ink-track);
+  --color-ink-accent: var(--ink-accent);
+  --color-ink-warning: var(--ink-warning);
+  --color-ink-negative: var(--ink-negative);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-8: var(--chart-8);
+  --color-chart-7: var(--chart-7);
+  --color-chart-6: var(--chart-6);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-grid: var(--grid);
+  --color-axis: var(--axis);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-track: var(--track);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Powierzchnie — jasne i lekko ciepłe, żeby biel nie raziła. */
+  --background: #f7f7f5;
+  --foreground: #16161a;
+  --card: #ffffff;
+  --card-foreground: #16161a;
+  --popover: #ffffff;
+  --popover-foreground: #16161a;
+
+  --primary: #1f2933;
+  --primary-foreground: #fbfbfa;
+  --secondary: #eeeeea;
+  --secondary-foreground: #1f2933;
+  --muted: #f1f1ed;
+  --muted-foreground: #66655f;
+  --accent: #ecebe6;
+  --accent-foreground: #1f2933;
+  --destructive: #d03b3b;
+
+  --border: #e4e3dd;
+  --input: #dededa;
+  --ring: #a8a79f;
+
+  /*
+   * Paleta kategorialna zwalidowana pod kątem daltonizmu na tle #ffffff:
+   * najgorsza para sąsiadująca CVD ΔE 9.1, normal-vision 19.6.
+   * Kolejność slotów jest częścią tej walidacji — nie przestawiać.
+   */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
+  --chart-8: #e34948;
+
+  --grid: #e8e7e1;
+  --axis: #c9c8c1;
+  --track: #ecebe5;
+
+  /*
+   * Ciemna karta nagłówka. `--ink-muted` daje 7.1:1 na `--ink`, więc opisy
+   * pod dużą kwotą spełniają AA także w małym stopniu pisma.
+   */
+  --ink: #17171b;
+  --ink-foreground: #fafaf9;
+  --ink-muted: #a5a49e;
+  --ink-track: #34343b;
+
+  /*
+   * Stany na ciemnym tle mają własne, rozjaśnione odcienie — te z jasnego
+   * motywu (#b07100, #d03b3b) ledwo odbijają się od `--ink`. Wszystkie trzy
+   * mają ≥5:1 kontrastu, więc niosą też tekst, nie tylko kreskę.
+   */
+  --ink-accent: #6b8afd;
+  --ink-warning: #f2b23c;
+  --ink-negative: #ff7a6e;
+
+  /* Stany — zawsze w parze z ikoną i etykietą, nigdy sam kolor. */
+  --positive: #006300;
+  --warning: #b07100;
+  --negative: #d03b3b;
+
+  /* Miękkie, duże zaokrąglenia — rounded-xl kart wypada wtedy ~22 px. */
+  --radius: 1rem;
+
+  --sidebar: #fbfbf9;
+  --sidebar-foreground: #16161a;
+  --sidebar-primary: #1f2933;
+  --sidebar-primary-foreground: #fbfbfa;
+  --sidebar-accent: #f1f1ed;
+  --sidebar-accent-foreground: #1f2933;
+  --sidebar-border: #e4e3dd;
+  --sidebar-ring: #a8a79f;
+
+  /* Jedna krzywa dla całego ruchu wejścia — szybki start, miękkie dojście. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /*
+   * Karty: zamiast obwódki dookoła — biała płaszczyzna odcinająca się od tła
+   * miękkim cieniem. Mniej linii na ekranie, hierarchię niesie odstęp i typografia.
+   * Nadpisujemy tu, a nie w card.tsx, żeby `shadcn add` nie nadpisał zmian.
+   */
+  [data-slot="card"] {
+    --card-spacing: --spacing(5);
+    box-shadow:
+      0 1px 2px rgb(16 16 20 / 0.04),
+      0 10px 28px -14px rgb(16 16 20 / 0.12);
+    --tw-ring-shadow: 0 0 #0000;
+    border: 0;
+  }
+  html {
+    @apply font-sans;
+    /* Wymusza jasne kontrolki systemowe (scrollbary, date picker, autofill), */
+    /* nawet gdy w systemie ustawiony jest tryb ciemny. */
+    color-scheme: light;
+  }
+  /* Mobile first: pole formularza < 16px powoduje auto-zoom w iOS Safari. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+  @media (min-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: inherit;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* --------------------------------------------------------------------------
+ * Ruch
+ *
+ * Jedna wspólna krzywa i jeden wspólny rytm opóźnień: treść nie „wskakuje"
+ * na ekran, tylko kolejne kafle wchodzą po sobie z dołu. Każdy z poniższych
+ * utilities czyta `--reveal-delay`, więc stopniowanie ustawia się w jednym
+ * miejscu — przez `<Reveal delay>` albo inline `style`.
+ *
+ * Animacje wejścia są jednorazowe (`both`), żeby po ich zakończeniu element
+ * został dokładnie w swoim docelowym stanie i nie blokował layoutu.
+ * -------------------------------------------------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Słupek rośnie od podstawy, a nie pojawia się w pełnej wysokości. */
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Pasek postępu wypełnia się od lewej do zadanej szerokości. */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/*
+ * Rysowanie łuku: animujemy `stroke-dasharray`, bo zmienne CSS ustawione
+ * na elemencie rozwiązują się w klatkach kluczowych. Dzięki temu jedna
+ * reguła obsługuje wszystkie wycinki pierścienia, każdy z własną długością.
+ */
+@keyframes arc-in {
+  from {
+    stroke-dasharray: 0 var(--arc-circumference);
+  }
+  to {
+    stroke-dasharray: var(--arc-length) var(--arc-circumference);
+  }
+}
+
+/* Przesuwające się światło po szkielecie — „to się jeszcze ładuje". */
+@keyframes shimmer {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+
+@utility reveal {
+  animation: rise 560ms var(--ease-out-soft) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@utility reveal-pop {
+  animation: pop 420ms var(--ease-out-soft) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@utility grow-y {
+  transform-origin: bottom;
+  animation: grow-y 700ms var(--ease-out-soft) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@utility grow-x {
+  transform-origin: left;
+  animation: grow-x 820ms var(--ease-out-soft) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@utility arc-in {
+  animation: arc-in 900ms var(--ease-out-soft) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@utility shimmer {
+  /*
+   * Gradient jedzie po tle `bg-muted`, więc rozjaśnienie robimy bielą karty.
+   * `background-repeat: no-repeat` zapobiega drugiemu, doganiającemu błyskowi.
+   */
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--card) 85%, transparent) 45%,
+    transparent 90%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/*
+ * Ruch bywa źródłem mdłości i zawrotów głowy. Przy `reduce` zostawiamy
+ * wyłącznie przenikanie: treść nadal pojawia się „miękko", ale nic się nie
+ * przesuwa ani nie pulsuje w kółko.
+ */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes rise {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes grow-y {
+    from,
+    to {
+      transform: none;
+    }
+  }
+  @keyframes grow-x {
+    from,
+    to {
+      transform: none;
+    }
+  }
+  @keyframes arc-in {
+    from,
+    to {
+      stroke-dasharray: var(--arc-length) var(--arc-circumference);
+    }
+  }
+  @keyframes shimmer {
+    from,
+    to {
+      background-position: 50% 0;
+    }
+  }
 }
